@@ -10,6 +10,7 @@ class PrefetchRelatedObjectsTests(TestCase):
     Since prefetch_related_objects() is just the inner part of
     prefetch_related(), only do basic tests to ensure its API hasn't changed.
     """
+
     @classmethod
     def setUpTestData(cls):
         cls.book1 = Book.objects.create(title='Poems')
@@ -86,9 +87,9 @@ class PrefetchRelatedObjectsTests(TestCase):
                 ],
                 [
                     [['Amy'], ['Belinda']],  # Charlotte - Poems, Jane Eyre
-                    [['Amy']],               # Anne - Poems
-                    [['Amy'], []],           # Emily - Poems, Wuthering Heights
-                    [['Amy', 'Belinda']],    # Jane - Sense and Sense
+                    [['Amy']],  # Anne - Poems
+                    [['Amy'], []],  # Emily - Poems, Wuthering Heights
+                    [['Amy', 'Belinda']],  # Jane - Sense and Sense
                 ]
             )
 

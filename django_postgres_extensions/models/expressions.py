@@ -1,8 +1,9 @@
-from django.db.models.expressions import F as BaseF, Value as BaseValue, Func, Expression
-from django.utils import six
 from django.contrib.postgres.fields.array import IndexTransform
-from django.utils.functional import cached_property
+from django.db.models.expressions import F as BaseF, Value as BaseValue, Expression
 from django.db.models.lookups import Transform
+from django.utils import six
+from django.utils.functional import cached_property
+
 
 class OperatorMixin(object):
     CAT = '||'
@@ -34,16 +35,20 @@ class OperatorMixin(object):
     def pathtext(self, other):
         return self._combine(other, self.PATHTEXT, False)
 
+
 class F(BaseF, OperatorMixin):
     pass
 
+
 class Value(BaseValue, OperatorMixin):
     def as_sql(self, compiler, connection):
-        if self._output_field_or_none and any(self._output_field_or_none.get_internal_type() == fieldname for fieldname in
-                                      ['ArrayField', 'MultiReferenceArrayField']):
+        if self._output_field_or_none and any(
+                self._output_field_or_none.get_internal_type() == fieldname for fieldname in
+                ['ArrayField', 'MultiReferenceArrayField']):
             base_field = self._output_field_or_none.base_field
             return '%s::%s[]' % ('%s', base_field.db_type(connection)), [self.value]
         return super(Value, self).as_sql(compiler, connection)
+
 
 class Index(IndexTransform):
     def __init__(self, field, index, *args, **kwargs):
@@ -62,6 +67,7 @@ class Index(IndexTransform):
     @property
     def output_field(self):
         return self.lhs.field.base_field
+
 
 class SliceArray(Transform):
     def __init__(self, field, *indexes, **kwargs):
@@ -100,6 +106,7 @@ def Key(field, keys_string):
         expression = F(field).key(Value(keys_string))
     expression.default_alias = "%s__%s" % (field, keys_string)
     return expression
+
 
 def Keys(field, keys):
     expression = F(field).key(Value(keys))

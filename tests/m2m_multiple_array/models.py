@@ -9,7 +9,9 @@ Set ``related_name`` to designate what the reverse relationship is called.
 
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
+
 from django_postgres_extensions.models.fields.related import ArrayManyToManyField
+
 
 @python_2_unicode_compatible
 class Category(models.Model):

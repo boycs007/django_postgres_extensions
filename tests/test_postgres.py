@@ -14,6 +14,9 @@
 
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()  # load .env
 
 DATABASES = {
     'default': {
@@ -21,6 +24,7 @@ DATABASES = {
         'NAME': os.environ.get('POSTGRES_DBNAME', 'db'),
         'USER': os.environ.get('POSTGRES_USER'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': os.environ.get('POSTGRES_HOST'),
         'PORT': 5432,
     }
 }

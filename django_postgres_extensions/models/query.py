@@ -1,10 +1,11 @@
-from django.db import transaction
-from django.core import exceptions
-from django.db.models.constants import LOOKUP_SEP
-from django.db.models.sql.constants import CURSOR
-from .sql import UpdateQuery
 import copy
 
+from django.core import exceptions
+from django.db import transaction
+from django.db.models.constants import LOOKUP_SEP
+from django.db.models.sql.constants import CURSOR
+
+from .sql import UpdateQuery
 
 
 def update(self, **kwargs):
@@ -21,6 +22,8 @@ def update(self, **kwargs):
         rows = query.get_compiler(self.db).execute_sql(CURSOR)
     self._result_cache = None
     return rows
+
+
 update.alters_data = True
 
 
@@ -38,8 +41,11 @@ def _update(self, values):
     query.add_update_fields(values)
     self._result_cache = None
     return query.get_compiler(self.db).execute_sql(CURSOR)
+
+
 _update.alters_data = True
 _update.queryset_only = False
+
 
 def format(self, field, expression, output_field=None, *args, **kwargs):
     if not output_field:
@@ -47,6 +53,7 @@ def format(self, field, expression, output_field=None, *args, **kwargs):
     kwargs = {output_field: expression(field, *args, **kwargs)}
     qs = self.defer(field).annotate(**kwargs)
     return qs
+
 
 def prefetch_one_level(instances, prefetcher, lookup, level):
     """

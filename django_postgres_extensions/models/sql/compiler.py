@@ -1,9 +1,11 @@
-from django.db.models.sql.compiler import (SQLCompiler, SQLInsertCompiler, SQLUpdateCompiler as BaseUpdateCompiler,
-    SQLAggregateCompiler, SQLDeleteCompiler)
 from django.core.exceptions import FieldError
+from django.db.models.sql.compiler import (SQLCompiler, SQLInsertCompiler, SQLUpdateCompiler as BaseUpdateCompiler,
+                                           SQLAggregateCompiler, SQLDeleteCompiler)
+
 
 def no_quote_name(name):
     return name
+
 
 class SQLUpdateCompiler(BaseUpdateCompiler):
     def as_sql(self):
@@ -45,15 +47,12 @@ class SQLUpdateCompiler(BaseUpdateCompiler):
                 val = field.get_db_prep_save(val, connection=self.connection)
 
             # Getting the placeholder for the field.
-            if hasattr(field, 'get_placeholder'):
-                placeholder = field.get_placeholder(val, self, self.connection)
-            else:
-                placeholder = '%s'
+            placeholder = '%s'
             self.placeholder = placeholder
             if hasattr(val, 'as_sql'):
-                    sql, params = self.compile(val)
-                    values.append('%s = %s' % (qn(name), sql))
-                    update_params.extend(params)
+                sql, params = self.compile(val)
+                values.append('%s = %s' % (qn(name), sql))
+                update_params.extend(params)
             elif val is not None:
                 values.append('%s = %s' % (qn(name), placeholder))
                 update_params.append(val)

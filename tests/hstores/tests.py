@@ -1,11 +1,12 @@
 from __future__ import unicode_literals
 
-from django.test import TestCase
-from .models import Product
-from django_postgres_extensions.models.functions import *
-from django_postgres_extensions.models.expressions import Key, Keys
-from django.db.utils import ProgrammingError
 from django.db import transaction
+from django.db.utils import ProgrammingError
+from django.test import TestCase
+
+from django_postgres_extensions.models.expressions import Key, Keys
+from django_postgres_extensions.models.functions import *
+from .models import Product
 
 
 class HStoreIndexTests(TestCase):
@@ -35,7 +36,7 @@ class HStoreIndexTests(TestCase):
 
     def test_array_update_keys_values(self):
         with transaction.atomic():
-            self.queryset.update(description__ = {'Genre': 'Heavy Metal', 'Popularity': 'Very Popular'})
+            self.queryset.update(description__={'Genre': 'Heavy Metal', 'Popularity': 'Very Popular'})
         product = self.queryset.get()
         self.assertDictEqual(product.description, {'Industry': 'Music', 'Release': 'Album', 'Genre': 'Heavy Metal',
                                                    'Popularity': 'Very Popular'})
@@ -46,10 +47,12 @@ class HStoreIndexTests(TestCase):
             self.assertRaises(ProgrammingError, self.queryset.update,
                               description__raw={'Popularity': 5})
 
+
 class HstoreFuncTests(TestCase):
     def setUp(self):
         super(HstoreFuncTests, self).setUp()
-        self.product = Product(name='xyz', description={'Industry': 'Music', 'Release': 'Album', 'Genre': 'Rock', 'Rating': '8'},
+        self.product = Product(name='xyz',
+                               description={'Industry': 'Music', 'Release': 'Album', 'Genre': 'Rock', 'Rating': '8'},
                                details={'Popularity': 'Very Popular'})
         self.product.save()
         self.queryset = Product.objects.filter(pk=self.product.pk)
@@ -69,23 +72,24 @@ class HstoreFuncTests(TestCase):
     def test_hstore_slice(self):
         with transaction.atomic():
             obj = self.queryset.annotate(description_slice=Slice('description', ['Industry', 'Release'])).get()
-        self.assertDictEqual(obj.description_slice,  {'Release': 'Album', 'Industry': 'Music'})
+        self.assertDictEqual(obj.description_slice, {'Release': 'Album', 'Industry': 'Music'})
 
     def test_hstore_delete_key(self):
         with transaction.atomic():
-            self.queryset.update(description = Delete('description', 'Genre'))
+            self.queryset.update(description=Delete('description', 'Genre'))
         product = self.queryset.get()
         self.assertDictEqual(product.description, {'Industry': 'Music', 'Release': 'Album', 'Rating': '8'})
 
     def test_hstore_delete_keys(self):
         with transaction.atomic():
-            self.queryset.update(description = Delete('description', ['Industry', 'Genre']))
+            self.queryset.update(description=Delete('description', ['Industry', 'Genre']))
         product = self.queryset.get()
         self.assertDictEqual(product.description, {'Release': 'Album', 'Rating': '8'})
 
     def test_hstore_delete_by_dict(self):
         with transaction.atomic():
-            self.queryset.update(description=Delete('description', {'Industry': 'Music', 'Release': 'Song', 'Genre': 'Rock'}))
+            self.queryset.update(
+                description=Delete('description', {'Industry': 'Music', 'Release': 'Song', 'Genre': 'Rock'}))
         product = self.queryset.get()
         self.assertDictEqual(product.description, {'Release': 'Album', 'Rating': '8'})
 
@@ -106,12 +110,14 @@ class HstoreFuncTests(TestCase):
     def test_hstore_to_array(self):
         with transaction.atomic():
             product = self.queryset.annotate(description_array=HStoreToArray('description')).get()
-        self.assertListEqual(product.description_array, ['Genre', 'Rock', 'Rating', '8', 'Release', 'Album', 'Industry', 'Music'])
+        self.assertListEqual(product.description_array,
+                             ['Genre', 'Rock', 'Rating', '8', 'Release', 'Album', 'Industry', 'Music'])
 
     def test_hstore_to_matrix(self):
         with transaction.atomic():
             product = self.queryset.annotate(description_matrix=HStoreToMatrix('description')).get()
-        self.assertListEqual(product.description_matrix, [['Genre', 'Rock'], ['Rating', '8'], ['Release', 'Album'], ['Industry', 'Music']])
+        self.assertListEqual(product.description_matrix,
+                             [['Genre', 'Rock'], ['Rating', '8'], ['Release', 'Album'], ['Industry', 'Music']])
 
     def test_hstore_to_jsonb(self):
         with transaction.atomic():
@@ -130,4 +136,4 @@ class HstoreFuncTests(TestCase):
             qs = self.queryset.format('description', HstoreToJSONBLoose)
             product = qs.get()
         self.assertDictEqual(product.description__alt,
-                         {'Genre': 'Rock', 'Release': 'Album', 'Industry': 'Music', 'Rating': 8})
+                             {'Genre': 'Rock', 'Release': 'Album', 'Industry': 'Music', 'Rating': 8})

@@ -6,6 +6,7 @@ from django.contrib.contenttypes.fields import (
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
+
 from django_postgres_extensions.models.fields.related import ArrayManyToManyField
 
 
@@ -138,7 +139,7 @@ class TaggedItem(models.Model):
         related_name='taggeditem_set3',
     )
     created_by_fkey = models.PositiveIntegerField(null=True)
-    created_by = GenericForeignKey('created_by_ct', 'created_by_fkey',)
+    created_by = GenericForeignKey('created_by_ct', 'created_by_fkey', )
     favorite_ct = models.ForeignKey(
         ContentType,
         models.SET_NULL,

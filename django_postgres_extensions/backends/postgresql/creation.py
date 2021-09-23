@@ -1,6 +1,7 @@
+from django.conf import settings
 from django.contrib.postgres.signals import register_type_handlers
 from django.db.backends.postgresql.creation import DatabaseCreation as BaseDatabaseCreation
-from django.conf import settings
+
 
 class DatabaseCreation(BaseDatabaseCreation):
     def create_test_db(self, verbosity=1, autoclobber=False, serialize=True, keepdb=False):

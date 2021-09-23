@@ -1,13 +1,15 @@
 import collections
 
+
 class OrderedSet(collections.MutableSet):
     """
     With thanks to http://code.activestate.com/recipes/576694/
     """
+
     def __init__(self, iterable=None):
         self.end = end = []
-        end += [None, end, end]         # sentinel node for doubly linked list
-        self.map = {}                   # key --> [key, prev, next]
+        end += [None, end, end]  # sentinel node for doubly linked list
+        self.map = {}  # key --> [key, prev, next]
         if iterable is not None:
             self |= iterable
 

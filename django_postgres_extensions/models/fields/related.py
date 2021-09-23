@@ -1,15 +1,18 @@
-from django_postgres_extensions.models.fields import ArrayField
-from django.db.models.fields.related import RelatedField
-from django.db.models.query_utils import PathInfo
-from .reverse_related import ArrayManyToManyRel
-from .related_descriptors import MultiReferenceDescriptor
 from django.db import models
 from django.db.models.fields.related import RECURSIVE_RELATIONSHIP_CONSTANT, lazy_related_operation
+from django.db.models.fields.related import RelatedField
+from django.db.models.query_utils import PathInfo
 from django.forms.models import ModelMultipleChoiceField
 from django.utils import six
 from django.utils.encoding import force_text
+
+from django_postgres_extensions.models.fields import ArrayField
+from .related_descriptors import MultiReferenceDescriptor
 from .related_lookups import RelatedArrayContains, RelatedArrayExact, RelatedArrayContainedBy, RelatedContainsItem, \
-    RelatedArrayOverlap, RelatedAnyGreaterThan, RelatedAnyLessThanOrEqual, RelatedAnyLessThan, RelatedAnyGreaterThanOrEqual
+    RelatedArrayOverlap, RelatedAnyGreaterThan, RelatedAnyLessThanOrEqual, RelatedAnyLessThan, \
+    RelatedAnyGreaterThanOrEqual
+from .reverse_related import ArrayManyToManyRel
+
 
 class ArrayManyToManyField(ArrayField, RelatedField):
     # Field flags
@@ -28,11 +31,11 @@ class ArrayManyToManyField(ArrayField, RelatedField):
             to = to_model._meta.model_name
         except AttributeError:
             assert isinstance(to_model, six.string_types), (
-                "%s(%r) is invalid. First parameter to ForeignKey must be "
-                "either a model, a model name, or the string %r" % (
-                    self.__class__.__name__, to_model,
-                    RECURSIVE_RELATIONSHIP_CONSTANT,
-                )
+                    "%s(%r) is invalid. First parameter to ForeignKey must be "
+                    "either a model, a model name, or the string %r" % (
+                        self.__class__.__name__, to_model,
+                        RECURSIVE_RELATIONSHIP_CONSTANT,
+                    )
             )
             to = str(to_model)
         else:
@@ -50,7 +53,7 @@ class ArrayManyToManyField(ArrayField, RelatedField):
                     elif internal_type == 'BigAutoField':
                         base_field = models.BigIntegerField()
                     elif hasattr(field, 'max_length'):
-                        base_field = base_field_type(max_length = field.max_length)
+                        base_field = base_field_type(max_length=field.max_length)
                     else:
                         base_field = base_field_type()
 
@@ -106,7 +109,7 @@ class ArrayManyToManyField(ArrayField, RelatedField):
         return attname, column
 
     def get_accessor_name(self):
-        return self.remote_field.model_name  + '_set'
+        return self.remote_field.model_name + '_set'
 
     def get_reverse_accessor_name(self):
         return self.remote_field.get_accessor_name()
@@ -171,19 +174,19 @@ class ArrayManyToManyField(ArrayField, RelatedField):
 
     def get_join_on(self, parent_alias, lhs_col, table_alias, rhs_col):
         return '%s.%s = ANY(%s.%s)' % (
-                table_alias,
-                rhs_col,
-                parent_alias,
-                lhs_col,
-            )
+            table_alias,
+            rhs_col,
+            parent_alias,
+            lhs_col,
+        )
 
     def get_join_on2(self, parent_alias, lhs_col, table_alias, rhs_col):
         return "ARRAY_APPEND(ARRAY[]::integer[], %s.%s) <@ ANY(%s.%s)" % (
-                table_alias,
-                rhs_col,
-                parent_alias,
-                lhs_col,
-            )
+            table_alias,
+            rhs_col,
+            parent_alias,
+            lhs_col,
+        )
 
     def resolve_related_fields(self):
         if len(self.from_fields) < 1 or len(self.from_fields) != len(self.to_fields):
@@ -201,36 +204,29 @@ class ArrayManyToManyField(ArrayField, RelatedField):
             related_fields.append((from_field, to_field))
         return related_fields
 
-
     @property
     def related_fields(self):
         if not hasattr(self, '_related_fields'):
             self._related_fields = self.resolve_related_fields()
         return self._related_fields
 
-
     @property
     def reverse_related_fields(self):
         return [(rhs_field, lhs_field) for lhs_field, rhs_field in self.related_fields]
-
 
     @property
     def local_related_fields(self):
         return tuple(lhs_field for lhs_field, rhs_field in self.related_fields)
 
-
     @property
     def foreign_related_fields(self):
         return tuple(rhs_field for lhs_field, rhs_field in self.related_fields if rhs_field)
 
-
     def get_local_related_value(self, instance):
         return self.get_instance_value_for_fields(instance, self.local_related_fields)
 
-
     def get_foreign_related_value(self, instance):
         return self.get_instance_value_for_fields(instance, self.foreign_related_fields)
-
 
     @staticmethod
     def get_instance_value_for_fields(instance, fields):
@@ -328,7 +324,8 @@ class ArrayManyToManyField(ArrayField, RelatedField):
         """
         opts = self.model._meta
         from_opts = self.remote_field.model._meta
-        pathinfos = [PathInfo(from_opts, opts, (from_opts.pk,), self.remote_field, not self.unique, False, filtered_relation)]
+        pathinfos = [
+            PathInfo(from_opts, opts, (from_opts.pk,), self.remote_field, not self.unique, False, filtered_relation)]
         return pathinfos
 
     def get_lookup(self, lookup_name):
@@ -336,7 +333,7 @@ class ArrayManyToManyField(ArrayField, RelatedField):
             return RelatedArrayOverlap
         elif lookup_name == 'exact':
             return RelatedContainsItem
-        elif lookup_name =='exactly':
+        elif lookup_name == 'exactly':
             return RelatedArrayExact
         elif lookup_name == 'contains':
             return RelatedArrayContains

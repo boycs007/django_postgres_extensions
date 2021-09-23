@@ -1,10 +1,11 @@
 from django.db.backends.postgresql.base import DatabaseWrapper as BaseDatabaseWrapper
-from .schema import DatabaseSchemaEditor
+
 from .creation import DatabaseCreation
 from .operations import DatabaseOperations
+from .schema import DatabaseSchemaEditor
+
 
 class DatabaseWrapper(BaseDatabaseWrapper):
-
     SchemaEditorClass = DatabaseSchemaEditor
 
     def __init__(self, *args, **kwargs):
@@ -23,7 +24,6 @@ class DatabaseWrapper(BaseDatabaseWrapper):
             'endof': 'LIKE ANY(%s)',
             'contains': '<@ ANY(%s)'
         }
-
 
         self.all_operators = {
             'exact': '= ALL(%s)',

@@ -1,12 +1,15 @@
 from __future__ import unicode_literals
 
-from django.test import TestCase
-from .models import Product
-from django_postgres_extensions.models.functions import *
-from django_postgres_extensions.models.expressions import F, Value as V, Index, SliceArray
-from django.db.utils import ProgrammingError, DataError
-from django.db import transaction
 from unittest import skip
+
+from django.db import transaction
+from django.db.utils import ProgrammingError, DataError
+from django.test import TestCase
+
+from django_postgres_extensions.models.expressions import F, Value as V, Index, SliceArray
+from django_postgres_extensions.models.functions import *
+from .models import Product
+
 
 class ArrayCharsIndexTests(TestCase):
 
@@ -52,6 +55,7 @@ class ArrayCharsIndexTests(TestCase):
             product = self.queryset.get()
             self.assertListEqual(product.tags, ['Music', 'Album', '1'])
 
+
 class ArrayCharsFuncTests(TestCase):
     def setUp(self):
         super(ArrayCharsFuncTests, self).setUp()
@@ -72,7 +76,7 @@ class ArrayCharsFuncTests(TestCase):
             obj = self.queryset.annotate(tags_appended=ArrayAppend('tags', 'Popular')).get()
         self.assertListEqual(obj.tags_appended, ['Music', 'Album', 'Rock', 'Popular'])
         with transaction.atomic():
-            self.queryset.update(tags = ArrayAppend('tags', 'Popular'))
+            self.queryset.update(tags=ArrayAppend('tags', 'Popular'))
         product = self.queryset.get()
         self.assertListEqual(product.tags, ['Music', 'Album', 'Rock', 'Popular'])
 
@@ -82,19 +86,19 @@ class ArrayCharsFuncTests(TestCase):
 
     def test_array_prepend(self):
         with transaction.atomic():
-            self.queryset.update(tags = ArrayPrepend('Popular', 'tags'))
+            self.queryset.update(tags=ArrayPrepend('Popular', 'tags'))
         product = self.queryset.get()
         self.assertListEqual(product.tags, ['Popular', 'Music', 'Album', 'Rock'])
 
     def test_array_remove(self):
         with transaction.atomic():
-            self.queryset.update(tags = ArrayRemove('tags', 'Album'))
+            self.queryset.update(tags=ArrayRemove('tags', 'Album'))
         product = self.queryset.get()
         self.assertListEqual(product.tags, ['Music', 'Rock'])
 
     def test_array_cat(self):
         with transaction.atomic():
-            self.queryset.update(tags = ArrayCat('tags', 'moretags'))
+            self.queryset.update(tags=ArrayCat('tags', 'moretags'))
         product = self.queryset.get()
         self.assertListEqual(product.tags, ['Music', 'Album', 'Rock', 'Very Popular'])
 
@@ -106,7 +110,7 @@ class ArrayCharsFuncTests(TestCase):
 
     def test_array_replace(self):
         with transaction.atomic():
-            self.queryset.update(tags = ArrayReplace('tags', 'Rock', 'Heavy Metal'))
+            self.queryset.update(tags=ArrayReplace('tags', 'Rock', 'Heavy Metal'))
         product = self.queryset.get()
         self.assertListEqual(product.tags, ['Music', 'Album', 'Heavy Metal'])
 
@@ -117,10 +121,11 @@ class ArrayCharsFuncTests(TestCase):
 
     def test_array_positions(self):
         with transaction.atomic():
-            self.queryset.update(tags = ArrayPrepend('Rock', 'tags'))
+            self.queryset.update(tags=ArrayPrepend('Rock', 'tags'))
         with transaction.atomic():
             obj = self.queryset.annotate(positions=ArrayPositions('tags', 'Rock')).get()
         self.assertEqual(obj.positions, [1, 4])
+
 
 class ArrayCharsCatTests(TestCase):
     def setUp(self):
@@ -135,7 +140,7 @@ class ArrayCharsCatTests(TestCase):
 
     def test_array_cat_append(self):
         with transaction.atomic():
-            self.queryset.update(tags=F('tags').cat(V(['Popular'], output_field = Product._meta.get_field('tags'))))
+            self.queryset.update(tags=F('tags').cat(V(['Popular'], output_field=Product._meta.get_field('tags'))))
         product = self.queryset.get()
         self.assertListEqual(product.tags, ['Music', 'Album', 'Rock', 'Popular'])
 
@@ -148,6 +153,7 @@ class ArrayCharsCatTests(TestCase):
     def test_array_char_raises(self):
         with transaction.atomic():
             self.assertRaises((ProgrammingError), self.queryset.update, tags=F('tags').cat(V(1)))
+
 
 class ArrayIntTests(TestCase):
     def setUp(self):
@@ -167,6 +173,13 @@ class ArrayIntTests(TestCase):
         product = self.queryset.get()
         self.assertListEqual(product.prices, [0, 1, 3])
 
+    def test_array_remove(self):
+        with transaction.atomic():
+            query_set = Product.objects.all().filter(prices__contains=[1])
+            query_set.update(prices=ArrayRemove('prices', 1))
+        product = self.queryset.get()
+        self.assertListEqual(product.prices, [0, 2])
+
     def test_array_int_append(self):
         with transaction.atomic():
             self.queryset.update(prices=ArrayAppend('prices', 3))
@@ -177,13 +190,13 @@ class ArrayIntTests(TestCase):
         with transaction.atomic():
             self.queryset.update(prices=F('prices').cat(V(3)))
         product = self.queryset.get()
-        self.assertListEqual(product.prices, [0,1,2,3])
+        self.assertListEqual(product.prices, [0, 1, 2, 3])
 
     def test_array_int_cat_append_list(self):
         with transaction.atomic():
             self.queryset.update(prices=F('prices').cat(V([3, 4])))
         product = self.queryset.get()
-        self.assertListEqual(product.prices, [0,1,2, 3, 4])
+        self.assertListEqual(product.prices, [0, 1, 2, 3, 4])
 
     def test_array_int_cat_prepend(self):
         with transaction.atomic():
@@ -200,10 +213,11 @@ class ArrayIntTests(TestCase):
     def test_array_int_raises(self):
         self.assertRaises(DataError, self.queryset.update, prices=ArrayAppend('prices', 'test'))
 
+
 class ArrayMultiDimensionalTests(TestCase):
     def setUp(self):
         super(ArrayMultiDimensionalTests, self).setUp()
-        self.product = Product(name='xyz', coordinates=[[0,15, 25], [15,30, 40], [45, 60, 90]])
+        self.product = Product(name='xyz', coordinates=[[0, 15, 25], [15, 30, 40], [45, 60, 90]])
         self.product.save()
         self.queryset = Product.objects.filter(id=self.product.id)
 
@@ -213,21 +227,21 @@ class ArrayMultiDimensionalTests(TestCase):
     def test_2d_array_values(self):
         product = self.queryset.get()
         array_values = product.coordinates
-        self.assertListEqual(array_values, [[0,15, 25], [15, 30, 40], [45, 60, 90]])
+        self.assertListEqual(array_values, [[0, 15, 25], [15, 30, 40], [45, 60, 90]])
 
     def test_2d_array_dimensions(self):
         with transaction.atomic():
-            obj = self.queryset.annotate(coordinates_dims = ArrayDims('coordinates')).get()
+            obj = self.queryset.annotate(coordinates_dims=ArrayDims('coordinates')).get()
         self.assertEqual(obj.coordinates_dims, '[1:3][1:3]')
 
     def test_2d_array_upper(self):
         with transaction.atomic():
-            obj = self.queryset.annotate(coordinates_upper_1 = ArrayUpper('coordinates', 1)).get()
+            obj = self.queryset.annotate(coordinates_upper_1=ArrayUpper('coordinates', 1)).get()
         self.assertEqual(obj.coordinates_upper_1, 3)
 
     def test_2d_array_lower(self):
         with transaction.atomic():
-            obj = self.queryset.annotate(coordinates_lower_2 = ArrayLower('coordinates', 2)).get()
+            obj = self.queryset.annotate(coordinates_lower_2=ArrayLower('coordinates', 2)).get()
         self.assertEqual(obj.coordinates_lower_2, 1)
 
     def test_2d_array_length(self):
@@ -268,24 +282,25 @@ class ArrayMultiDimensionalTests(TestCase):
         with transaction.atomic():
             self.queryset.update(tags__1=[70, 90, 100])
         product = self.queryset.get()
-        self.assertListEqual(product.coordinates, [[0,15, 25], [70, 90, 100], [45, 60, 90]])
+        self.assertListEqual(product.coordinates, [[0, 15, 25], [70, 90, 100], [45, 60, 90]])
 
     @skip("Update seems to run but unable to retrieve object due to DataError: array does not start with '{'")
     def test_2d_array_update_index_2(self):
         with transaction.atomic():
             self.queryset.update(tags__1__2=35)
         product = self.queryset.get()
-        self.assertListEqual(product.coordinates, [[0,15, 25], [15, 35, 40], [45, 60, 90]])
+        self.assertListEqual(product.coordinates, [[0, 15, 25], [15, 35, 40], [45, 60, 90]])
 
-    @skip("Fails with 'No function matches the given name and argument types. You might need to add explicit type casts.'")
+    @skip(
+        "Fails with 'No function matches the given name and argument types. You might need to add explicit type casts.'")
     def test_2d_array_append_1(self):
         with transaction.atomic():
             obj = self.queryset.annotate(coordinates_appended=ArrayAppend('coordinates', [70, 90, 100])).get()
-        self.assertListEqual(obj.coordinates_appended, [[0,15, 25], [15, 35, 40], [45, 60, 90], [70, 90, 100]])
+        self.assertListEqual(obj.coordinates_appended, [[0, 15, 25], [15, 35, 40], [45, 60, 90], [70, 90, 100]])
         with transaction.atomic():
             self.queryset.update(coordinates=ArrayAppend('coordinates', [70, 90, 100]))
         product = self.queryset.get()
-        self.assertListEqual(product.coordinates, [[0,15, 25], [15, 35, 40], [45, 60, 90], [70, 90, 100]])
+        self.assertListEqual(product.coordinates, [[0, 15, 25], [15, 35, 40], [45, 60, 90], [70, 90, 100]])
 
     @skip(
         "Fails with 'No function matches the given name and argument types. "

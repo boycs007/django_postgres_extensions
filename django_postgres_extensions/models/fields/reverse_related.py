@@ -1,16 +1,17 @@
-from django.db.models.fields.reverse_related import ForeignObjectRel
+from django.core import exceptions
 from django.db.models.fields.related_lookups import RelatedExact, RelatedIn, RelatedGreaterThan, RelatedIsNull, \
     RelatedLessThan, RelatedGreaterThanOrEqual, RelatedLessThanOrEqual
-from django.core import exceptions
+from django.db.models.fields.reverse_related import ForeignObjectRel
+
 
 class ArrayManyToManyRel(ForeignObjectRel):
-
     """
     Used by ManyToManyFields to store information about the relation.
 
     ``_meta.get_fields()`` returns this class to provide access to the field
     flags for the reverse relation.
     """
+
     def __init__(self, field, to, field_name, related_name=None, related_query_name=None,
                  limit_choices_to=None, symmetrical=True):
         super(ArrayManyToManyRel, self).__init__(
@@ -26,11 +27,11 @@ class ArrayManyToManyRel(ForeignObjectRel):
 
     def get_join_on(self, parent_alias, lhs_col, table_alias, rhs_col):
         return '%s.%s = ANY(%s.%s)' % (
-                parent_alias,
-                lhs_col,
-                table_alias,
-                rhs_col,
-            )
+            parent_alias,
+            lhs_col,
+            table_alias,
+            rhs_col,
+        )
 
     def set_field_name(self):
         self.field_name = self.field_name or self.model._meta.pk.name
@@ -42,7 +43,7 @@ class ArrayManyToManyRel(ForeignObjectRel):
         field = self.model._meta.get_field(self.field_name)
         if not field.concrete:
             raise exceptions.FieldDoesNotExist("No related field named '%s'" %
-                    self.field_name)
+                                               self.field_name)
         return field
 
     def get_lookup(self, lookup_name):

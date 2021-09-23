@@ -1,10 +1,14 @@
 from __future__ import unicode_literals
-from django.test import TestCase
-from django.db import connections
-from django.test import tag
+
 import time
+
+from django.db import connections
+from django.test import TestCase
+from django.test import tag
+
 from django_postgres_extensions.models.functions import ArrayAppend, ArrayCat
 from .models import Traditional, NumberArray, NumberTraditional, Array
+
 
 @tag('benchmark')
 class BaseBenchmark(TestCase):
@@ -12,7 +16,7 @@ class BaseBenchmark(TestCase):
                    first="Traditional M2M", second="Array M2M"):
         start = time.clock()
         kwargs = kwargs1 or {}
-        result1= func1(*args1, **kwargs)
+        result1 = func1(*args1, **kwargs)
         traditional_time = time.clock() - start
         start = time.clock()
         kwargs = kwargs2 or {}
@@ -27,6 +31,7 @@ class BaseBenchmark(TestCase):
             print("Test %s: %s is faster. %s" % (text, first, times))
         else:
             print("Test %s: Times are equal. %s" % (text, times))
+
 
 @tag('benchmark')
 class ArrayBenchmarks(BaseBenchmark):
@@ -51,6 +56,7 @@ class ArrayBenchmarks(BaseBenchmark):
         kwargs2 = {'numbers': ArrayCat('numbers_ids', [numberarray.pk])}
         self.checkTimes('Append vs Cat', Array.objects.update, Array.objects.update, kwargs1=kwargs1,
                         kwargs2=kwargs2, first="Append", second="Cat")
+
 
 @tag('benchmark')
 class ForwardWriteBenchmarks(BaseBenchmark):
@@ -101,11 +107,11 @@ class ForwardWriteBenchmarks(BaseBenchmark):
         number_trad2 = numbers_trad[1]
         number_array1 = numbers_array[0]
         number_array2 = numbers_array[1]
-        self.checkTimes('Remove 1 Partial', self.traditional.numbers.remove, self.array.numbers.remove, args1=(number_trad1,),
+        self.checkTimes('Remove 1 Partial', self.traditional.numbers.remove, self.array.numbers.remove,
+                        args1=(number_trad1,),
                         args2=(number_array1,))
         self.checkTimes('Remove 1 Remaining', self.traditional.numbers.remove, self.array.numbers.remove,
                         args1=(number_trad2,), args2=(number_array2,))
-
 
     def test_remove_10(self):
         numbers_trad, numbers_array = self.create_objs(20)
@@ -113,9 +119,11 @@ class ForwardWriteBenchmarks(BaseBenchmark):
         numbers_trad2 = numbers_trad[11:20]
         numbers_array1 = numbers_array[0:10]
         numbers_array2 = numbers_array[11:20]
-        self.checkTimes('Remove 10 partial', self.traditional.numbers.remove, self.array.numbers.remove, args1=numbers_trad1,
+        self.checkTimes('Remove 10 partial', self.traditional.numbers.remove, self.array.numbers.remove,
+                        args1=numbers_trad1,
                         args2=numbers_array1)
-        self.checkTimes('Remove 10 all', self.traditional.numbers.remove, self.array.numbers.remove, args1=numbers_trad2,
+        self.checkTimes('Remove 10 all', self.traditional.numbers.remove, self.array.numbers.remove,
+                        args1=numbers_trad2,
                         args2=numbers_array2)
 
     def test_remove_10000(self):
@@ -124,7 +132,8 @@ class ForwardWriteBenchmarks(BaseBenchmark):
         numbers_trad2 = numbers_trad[10001:20000]
         numbers_array1 = numbers_array[0:10000]
         numbers_array2 = numbers_array[10001:20000]
-        self.checkTimes('Remove 10000 Partial', self.traditional.numbers.remove, self.array.numbers.remove, args1=numbers_trad1,
+        self.checkTimes('Remove 10000 Partial', self.traditional.numbers.remove, self.array.numbers.remove,
+                        args1=numbers_trad1,
                         args2=numbers_array1)
         self.checkTimes('Remove 10000 All', self.traditional.numbers.remove, self.array.numbers.remove,
                         args1=numbers_trad2,
@@ -163,6 +172,7 @@ class ForwardWriteBenchmarks(BaseBenchmark):
         self.assertEqual(self.traditional.numbers.count(), 0)
         self.assertEqual(self.array.numbers.count(), 0)
 
+
 @tag('benchmark')
 class ReverseWriteBenchmarks(BaseBenchmark):
 
@@ -179,9 +189,11 @@ class ReverseWriteBenchmarks(BaseBenchmark):
         trad2 = trads[1]
         array1 = arrays[0]
         array2 = arrays[1]
-        self.checkTimes('Add 1 New', self.numtraditional.traditional_set.add, self.numarray.array_set.add, args1=(trad1,),
+        self.checkTimes('Add 1 New', self.numtraditional.traditional_set.add, self.numarray.array_set.add,
+                        args1=(trad1,),
                         args2=(array1,))
-        self.checkTimes('Add 1 Existing', self.numtraditional.traditional_set.add, self.numarray.array_set.add, args1=(trad2,),
+        self.checkTimes('Add 1 Existing', self.numtraditional.traditional_set.add, self.numarray.array_set.add,
+                        args1=(trad2,),
                         args2=(array2,))
 
     def test_add_10(self):
@@ -192,7 +204,8 @@ class ReverseWriteBenchmarks(BaseBenchmark):
         array2 = arrays[11:20]
         self.checkTimes('Add 10 New', self.numtraditional.traditional_set.add, self.numarray.array_set.add, args1=trad1,
                         args2=array1)
-        self.checkTimes('Add 10 Existing', self.numtraditional.traditional_set.add, self.numarray.array_set.add, args1=trad2,
+        self.checkTimes('Add 10 Existing', self.numtraditional.traditional_set.add, self.numarray.array_set.add,
+                        args1=trad2,
                         args2=array2)
 
     def test_add_1000(self):
@@ -201,11 +214,11 @@ class ReverseWriteBenchmarks(BaseBenchmark):
         trad2 = trads[1001:2000]
         array1 = arrays[0:1000]
         array2 = arrays[1001:2000]
-        self.checkTimes('Add 1000 New', self.numtraditional.traditional_set.add, self.numarray.array_set.add, args1=trad1,
+        self.checkTimes('Add 1000 New', self.numtraditional.traditional_set.add, self.numarray.array_set.add,
+                        args1=trad1,
                         args2=array1)
         self.checkTimes('Add 1000 Existing', self.numtraditional.traditional_set.add, self.numarray.array_set.add,
-                    args1=trad2, args2=array2)
-
+                        args1=trad2, args2=array2)
 
     def test_remove_1(self):
         numbers_trad, numbers_array = self.create_objs(2)
@@ -215,9 +228,9 @@ class ReverseWriteBenchmarks(BaseBenchmark):
         number_array2 = numbers_array[1]
         self.checkTimes('Remove 1 Partial', self.numtraditional.traditional_set.remove, self.numarray.array_set.remove,
                         args1=(number_trad1,), args2=(number_array1,))
-        self.checkTimes('Remove 1 Remaining', self.numtraditional.traditional_set.remove, self.numarray.array_set.remove,
+        self.checkTimes('Remove 1 Remaining', self.numtraditional.traditional_set.remove,
+                        self.numarray.array_set.remove,
                         args1=(number_trad2,), args2=(number_array2,))
-
 
     def test_remove_10(self):
         numbers_trad, numbers_array = self.create_objs(20)
@@ -227,7 +240,8 @@ class ReverseWriteBenchmarks(BaseBenchmark):
         number_array2 = numbers_array[10:20]
         self.checkTimes('Remove 10 Partial', self.numtraditional.traditional_set.remove, self.numarray.array_set.remove,
                         args1=number_trad1, args2=number_array1)
-        self.checkTimes('Remove 10 Remaining', self.numtraditional.traditional_set.remove, self.numarray.array_set.remove,
+        self.checkTimes('Remove 10 Remaining', self.numtraditional.traditional_set.remove,
+                        self.numarray.array_set.remove,
                         args1=number_trad2, args2=number_array2)
 
     def test_remove_1000(self):
@@ -236,9 +250,11 @@ class ReverseWriteBenchmarks(BaseBenchmark):
         number_trad2 = numbers_trad[1000:2000]
         number_array1 = numbers_array[0:1000]
         number_array2 = numbers_array[1000:2000]
-        self.checkTimes('Remove 1000 Partial', self.numtraditional.traditional_set.remove, self.numarray.array_set.remove,
+        self.checkTimes('Remove 1000 Partial', self.numtraditional.traditional_set.remove,
+                        self.numarray.array_set.remove,
                         args1=number_trad1, args2=number_array1)
-        self.checkTimes('Remove 1000 Remaining', self.numtraditional.traditional_set.remove, self.numarray.array_set.remove,
+        self.checkTimes('Remove 1000 Remaining', self.numtraditional.traditional_set.remove,
+                        self.numarray.array_set.remove,
                         args1=number_trad2, args2=number_array2)
 
     def test_clear_10(self):
@@ -275,6 +291,7 @@ class ReverseWriteBenchmarks(BaseBenchmark):
             self.assertEqual(self.numtraditional.traditional_set.count(), number)
             self.assertEqual(self.numarray.array_set.count(), number)
         return trads, arrays
+
 
 @tag('benchmark')
 class ReadBenchmarks(BaseBenchmark):
@@ -330,12 +347,12 @@ class ReadBenchmarks(BaseBenchmark):
     def test_lookup_id(self):
         qs1 = Traditional.objects.filter(numbers=self.numtrad)
         qs2 = Array.objects.filter(numbers=self.numarray)
-        self.assertEqual(qs1.count(),500)
+        self.assertEqual(qs1.count(), 500)
         self.assertEqual(qs2.count(), 500)
         sql, params = qs2._as_sql(self.connection)
         with self.connection.cursor() as cursor:
             cursor.execute("EXPLAIN " + sql, params)
-            #print(cursor.fetchall())
+            # print(cursor.fetchall())
         self.checkTimes('forward lookup_id 1000x100', list, list, args1=(qs1,),
                         args2=(qs2,))
 
@@ -344,19 +361,19 @@ class ReadBenchmarks(BaseBenchmark):
         array = Array.objects.order_by('id').first()
         qs1 = NumberTraditional.objects.filter(traditional=trad)
         qs2 = NumberArray.objects.filter(array=array)
-        self.assertEqual(qs1.count(),100)
+        self.assertEqual(qs1.count(), 100)
         self.assertEqual(qs2.count(), 100)
         sql, params = qs2._as_sql(self.connection)
         with self.connection.cursor() as cursor:
             cursor.execute("EXPLAIN " + sql, params)
-            #print(cursor.fetchall())
+            # print(cursor.fetchall())
         self.checkTimes('reverse lookup_id 1000x100', list, list, args1=(qs1,),
                         args2=(qs2,))
 
     def test_reverse_lookup_other_field(self):
         qs1 = NumberTraditional.objects.filter(traditional__index=15)
         qs2 = NumberArray.objects.filter(array__index=15)
-        self.assertEqual(qs1.count(),100)
+        self.assertEqual(qs1.count(), 100)
         self.assertEqual(qs2.count(), 100)
         sql, params = qs2._as_sql(self.connection)
         with self.connection.cursor() as cursor:
@@ -367,7 +384,7 @@ class ReadBenchmarks(BaseBenchmark):
     def test_lookup_other_field(self):
         qs1 = Traditional.objects.filter(numbers__index=80)
         qs2 = Array.objects.filter(numbers__index=80)
-        self.assertEqual(qs1.count(),500)
+        self.assertEqual(qs1.count(), 500)
         self.assertEqual(qs2.count(), 500)
         self.checkTimes('forward lookup other field 1000x100', list, list, args1=(qs1,),
                         args2=(qs2,))
@@ -387,6 +404,7 @@ class ReadBenchmarks(BaseBenchmark):
         qs2 = arraynum.array_set.all()
         self.assertEqual(qs1.count(), qs2.count())
         self.checkTimes('Reverse descriptor all()', list, list, args1=(qs1,), args2=(qs2,))
+
 
 @tag('benchmark')
 class ModelSavingBenchmarks(BaseBenchmark):
@@ -439,4 +457,3 @@ class ModelSavingBenchmarks(BaseBenchmark):
         self.create_for_traditional(1000)
         self.create_for_array(1000)
         self.checkTimes('Delete 10000', Traditional.objects.all().delete, Array.objects.all().delete)
-

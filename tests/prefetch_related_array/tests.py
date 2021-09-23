@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-import warnings
+from unittest import skip
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
@@ -9,8 +9,6 @@ from django.db.models import Prefetch
 from django.db.models.query import get_prefetcher
 from django.test import TestCase, override_settings
 from django.utils import six
-from django.utils.encoding import force_text
-from unittest import skip
 
 from .models import (
     Author, Author2, AuthorAddress, AuthorWithAge, Bio, Book, Bookmark,
@@ -18,7 +16,6 @@ from .models import (
     House, LessonEntry, Person, Qualification, Reader, Room, TaggedItem,
     Teacher, WordEntry,
 )
-
 
 
 class PrefetchRelatedTests(TestCase):
@@ -140,12 +137,12 @@ class PrefetchRelatedTests(TestCase):
                       for b in a.books.all()]
                      for a in qs]
             self.assertEqual(lists,
-            [
-                [["Amy"], ["Belinda"]],  # Charlotte - Poems, Jane Eyre
-                [["Amy"]],                # Anne - Poems
-                [["Amy"], []],            # Emily - Poems, Wuthering Heights
-                [["Amy", "Belinda"]],    # Jane - Sense and Sense
-            ])
+                             [
+                                 [["Amy"], ["Belinda"]],  # Charlotte - Poems, Jane Eyre
+                                 [["Amy"]],  # Anne - Poems
+                                 [["Amy"], []],  # Emily - Poems, Wuthering Heights
+                                 [["Amy", "Belinda"]],  # Jane - Sense and Sense
+                             ])
 
     def test_overriding_prefetch(self):
         with self.assertNumQueries(3):
@@ -154,24 +151,24 @@ class PrefetchRelatedTests(TestCase):
                       for b in a.books.all()]
                      for a in qs]
             self.assertEqual(lists,
-            [
-                [["Amy"], ["Belinda"]],  # Charlotte - Poems, Jane Eyre
-                [["Amy"]],                # Anne - Poems
-                [["Amy"], []],            # Emily - Poems, Wuthering Heights
-                [["Amy", "Belinda"]],    # Jane - Sense and Sense
-            ])
+                             [
+                                 [["Amy"], ["Belinda"]],  # Charlotte - Poems, Jane Eyre
+                                 [["Amy"]],  # Anne - Poems
+                                 [["Amy"], []],  # Emily - Poems, Wuthering Heights
+                                 [["Amy", "Belinda"]],  # Jane - Sense and Sense
+                             ])
         with self.assertNumQueries(3):
             qs = Author.objects.prefetch_related('books__read_by', 'books')
             lists = [[[six.text_type(r) for r in b.read_by.all()]
                       for b in a.books.all()]
                      for a in qs]
             self.assertEqual(lists,
-            [
-                [["Amy"], ["Belinda"]],  # Charlotte - Poems, Jane Eyre
-                [["Amy"]],                # Anne - Poems
-                [["Amy"], []],            # Emily - Poems, Wuthering Heights
-                [["Amy", "Belinda"]],    # Jane - Sense and Sense
-            ])
+                             [
+                                 [["Amy"], ["Belinda"]],  # Charlotte - Poems, Jane Eyre
+                                 [["Amy"]],  # Anne - Poems
+                                 [["Amy"], []],  # Emily - Poems, Wuthering Heights
+                                 [["Amy", "Belinda"]],  # Jane - Sense and Sense
+                             ])
 
     def test_get(self):
         """
@@ -824,6 +821,7 @@ class GenericRelationTests(TestCase):
             self.assertEqual(sorted([i.tag for i in bookmark.tags.all()]), ["django", "python"])
             self.assertEqual([i.tag for i in bookmark.favorite_tags.all()], ["python"])
 
+
 @skip("Not working")
 class MultiTableInheritanceTest(TestCase):
 
@@ -875,7 +873,7 @@ class MultiTableInheritanceTest(TestCase):
                    for book in qs]
         qs = BookWithYear.objects.all()
         lst2 = [[six.text_type(author) for author in book.aged_authors.all()]
-               for book in qs]
+                for book in qs]
         self.assertEqual(lst, lst2)
 
     def test_parent_link_prefetch(self):
@@ -1031,6 +1029,7 @@ class NullableTest(TestCase):
             for b in bulk.values():
                 list(b.serfs.all())
 
+
 class Ticket19607Tests(TestCase):
 
     def setUp(self):
@@ -1062,13 +1061,13 @@ class Ticket21410Tests(TestCase):
         self.book4 = Book.objects.create(title="Sense and Sensibility")
 
         self.author1 = Author2.objects.create(name="Charlotte",
-                                             first_book=self.book1)
+                                              first_book=self.book1)
         self.author2 = Author2.objects.create(name="Anne",
-                                             first_book=self.book1)
+                                              first_book=self.book1)
         self.author3 = Author2.objects.create(name="Emily",
-                                             first_book=self.book1)
+                                              first_book=self.book1)
         self.author4 = Author2.objects.create(name="Jane",
-                                             first_book=self.book4)
+                                              first_book=self.book4)
 
         self.author1.favorite_books.add(self.book1, self.book2, self.book3)
         self.author2.favorite_books.add(self.book1)

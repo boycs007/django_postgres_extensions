@@ -1,8 +1,10 @@
-from django.db.models import signals
 from django.db import transaction, router
-from django_postgres_extensions.utils import OrderedSet
-from django_postgres_extensions.models.functions import ArrayCat, ArrayRemove, multi_array_remove
+from django.db.models import signals
 from django.utils.functional import cached_property
+
+from django_postgres_extensions.models.functions import ArrayCat, ArrayRemove, multi_array_remove
+from django_postgres_extensions.utils import OrderedSet
+
 
 class MultiReferenceDescriptor(object):
 
@@ -36,8 +38,8 @@ class MultiReferenceDescriptor(object):
             self.isJson
         )
 
-def create_array_many_to_many_manager(superclass, rel, reverse, IsJson):
 
+def create_array_many_to_many_manager(superclass, rel, reverse, IsJson):
     class ArrayForwardManyToManyManager(superclass):
 
         def __init__(self, instance):
@@ -65,6 +67,7 @@ def create_array_many_to_many_manager(superclass, rel, reverse, IsJson):
                 create_manager_func = create_array_many_to_many_manager
             manager_class = create_manager_func(manager.__class__, rel, reverse, False)
             return manager_class(instance=self.instance)
+
         do_not_call_in_templates = True
 
         def set_attributes(self):
@@ -96,7 +99,7 @@ def create_array_many_to_many_manager(superclass, rel, reverse, IsJson):
             pks = []
             for instance in instances:
                 pks += getattr(instance, self.column)
-            filters = {'%s__in' % self.to_field_name:set(pks)}
+            filters = {'%s__in' % self.to_field_name: set(pks)}
             return filters
 
         def validate_rel_obj(self, rel_obj, fks):
@@ -121,6 +124,7 @@ def create_array_many_to_many_manager(superclass, rel, reverse, IsJson):
         def _update_instance(self, **kwargs):
             qs = self.related_model.objects.filter(pk=self.instance.pk)
             qs.update(**kwargs)
+
         _update_instance.alters_data = True
 
         def _add_items(self, *objs):
@@ -138,6 +142,7 @@ def create_array_many_to_many_manager(superclass, rel, reverse, IsJson):
             if self.symmetrical:
                 kwargs = {self.column: ArrayCat(self.column, [self.instance.pk], output_field=self.field)}
                 self.model.objects.filter(pk__in=objs).update(**kwargs)
+
         _add_items.alters_data = True
 
         def validate_item(self, obj):
@@ -172,6 +177,7 @@ def create_array_many_to_many_manager(superclass, rel, reverse, IsJson):
                 instance=self.instance, reverse=self.reverse,
                 model=self.model, pk_set=objs, using=self.db,
             )
+
         remove.alters_data = True
 
         def _remove_items(self, *objs, **kwargs):
@@ -184,12 +190,14 @@ def create_array_many_to_many_manager(superclass, rel, reverse, IsJson):
                 if self.symmetrical:
                     kwargs = {self.column: ArrayRemove(self.column, self.instance.pk, output_field=self.field)}
                     self.model.objects.filter(pk__in=list(objs)).update(**kwargs)
+
         _remove_items.alters_data = True
 
         def create(self, **kwargs):
             new_obj = super(ArrayForwardManyToManyManager, self).create(**kwargs)
             self.add(new_obj)
             return new_obj
+
         create.alters_data = True
 
         def get_or_create(self, **kwargs):
@@ -199,6 +207,7 @@ def create_array_many_to_many_manager(superclass, rel, reverse, IsJson):
             if created:
                 self.add(obj)
             return obj, created
+
         get_or_create.alters_data = True
 
         def update_or_create(self, **kwargs):
@@ -208,6 +217,7 @@ def create_array_many_to_many_manager(superclass, rel, reverse, IsJson):
             if created:
                 self.add(obj)
             return obj, created
+
         update_or_create.alters_data = True
 
         def _clear(self):
@@ -216,6 +226,7 @@ def create_array_many_to_many_manager(superclass, rel, reverse, IsJson):
             if self.symmetrical:
                 kwargs = {self.column: ArrayRemove(self.column, self.instance.pk, output_field=self.field)}
                 self.model.objects.update(**kwargs)
+
         _clear.alters_data = True
 
         def clear(self, **kwargs):
@@ -232,6 +243,7 @@ def create_array_many_to_many_manager(superclass, rel, reverse, IsJson):
                     instance=self.instance, reverse=reverse,
                     model=self.model, pk_set=None, using=self.db,
                 )
+
         clear.alters_data = True
 
         def set(self, objs, **kwargs):
@@ -246,6 +258,7 @@ def create_array_many_to_many_manager(superclass, rel, reverse, IsJson):
                         new_objs.append(obj)
                 self.remove(*old_ids)
                 self.add(*new_objs)
+
         set.alters_data = True
 
     class ArrayReverseManyToManyManager(ArrayForwardManyToManyManager):
@@ -272,22 +285,25 @@ def create_array_many_to_many_manager(superclass, rel, reverse, IsJson):
 
         def _add_items(self, *objs, **kwargs):
             exclude = {self.column: self.instance.pk}
-            qs = self.model.objects.filter(pk__in = objs).exclude(**exclude)
+            qs = self.model.objects.filter(pk__in=objs).exclude(**exclude)
             kwargs = {self.column: ArrayCat(self.column, [self.to_field_value])}
             qs.update(**kwargs)
+
         _add_items.alters_data = True
 
         def _remove_items(self, *objs, **kwargs):
-            qs = self.filter(pk__in = objs)
+            qs = self.filter(pk__in=objs)
             kwargs = {self.column: ArrayRemove(self.column, self.to_field_value)}
             with transaction.atomic():
                 qs.update(**kwargs)
+
         _remove_items.alters_data = True
 
         def _clear(self):
             with transaction.atomic():
                 kwargs = {self.column: ArrayRemove(self.column, self.to_field_value)}
             self.model.objects.update(**kwargs)
+
         _clear.alters_data = True
 
     if reverse:

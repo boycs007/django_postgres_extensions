@@ -9,4 +9,3 @@ class UpdateArrayByIndex(object):
         for index in self.indexes:
             name += "[%s]" % index
         return name
-

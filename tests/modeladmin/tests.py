@@ -1,12 +1,14 @@
 from __future__ import unicode_literals
 
-from django.test import override_settings
-from django.contrib.auth import get_user_model
-from django.contrib.admin.tests import AdminSeleniumTestCase
-from selenium.common.exceptions import NoSuchWindowException
-from .models import Product, Buyer
-import time
 import ast
+import time
+
+from django.contrib.admin.tests import AdminSeleniumTestCase
+from django.contrib.auth import get_user_model
+from django.test import override_settings
+from selenium.common.exceptions import NoSuchWindowException
+
+from .models import Product, Buyer
 
 installed_apps = [
     'django.contrib.admin',
@@ -21,9 +23,9 @@ installed_apps = [
     'modeladmin'
 ]
 
+
 @override_settings(ROOT_URLCONF='modeladmin.urls', INSTALLED_APPS=installed_apps, DEBUG=True)
 class PostgresAdminTestCase(AdminSeleniumTestCase):
-
     close_manually = False
 
     browsers = ['chrome']
@@ -85,9 +87,13 @@ class PostgresAdminTestCase(AdminSeleniumTestCase):
         element = self.selenium.find_elements_by_class_name('field-keywords')[0]
         self.assertEqual(element.text, 'fun, popular')
         element = self.selenium.find_elements_by_class_name('field-shipping')[0]
-        self.assertDictEqual(ast.literal_eval(element.text), {'City': 'Dublin', 'Region': 'Co. Dublin', 'Country': 'Ireland', 'Address': 'Pearse Street'})
+        self.assertDictEqual(ast.literal_eval(element.text),
+                             {'City': 'Dublin', 'Region': 'Co. Dublin', 'Country': 'Ireland',
+                              'Address': 'Pearse Street'})
         element = self.selenium.find_elements_by_class_name('field-details')[0]
-        self.assertDictEqual(ast.literal_eval(element.text), {'colours': ['black', 'white', 'blue'], 'brand': {'country': 'Germany', 'name': 'Adidas'}, 'type': 'runners'})
+        self.assertDictEqual(ast.literal_eval(element.text),
+                             {'colours': ['black', 'white', 'blue'], 'brand': {'country': 'Germany', 'name': 'Adidas'},
+                              'type': 'runners'})
         element = self.selenium.find_elements_by_class_name('field-country')[0]
         self.assertEqual(element.text, "Ireland")
 
@@ -122,9 +128,12 @@ class PostgresAdminTestCase(AdminSeleniumTestCase):
         self.selenium.get('%s/%s' % (self.url, 'add'))
         self.wait_page_loaded()
         ids_values = (("id_name", "Pro Trainers"), ("id_keywords_0", "fun"), ("id_keywords_1", "popular"),
-                      ("id_shipping_address", "Pearse Street"), ("id_shipping_city", "Dublin"), ("id_shipping_region", "Co.Dublin"),
-                      ("id_shipping_country", "Ireland"), ("id_details_brand_name", "Adidas"), ("id_details_brand_country", "Germany"),
-                      ("id_details_type", "Runners"), ("id_details_colours_0", "Black"), ("id_details_colours_1", "White"),
+                      ("id_shipping_address", "Pearse Street"), ("id_shipping_city", "Dublin"),
+                      ("id_shipping_region", "Co.Dublin"),
+                      ("id_shipping_country", "Ireland"), ("id_details_brand_name", "Adidas"),
+                      ("id_details_brand_country", "Germany"),
+                      ("id_details_type", "Runners"), ("id_details_colours_0", "Black"),
+                      ("id_details_colours_1", "White"),
                       ("id_details_colours_2", "Blue"))
         select_values = (("sports", ("tennis", "basketball"),),)
         many_to_many_select = (("buyers", (buyer1.pk, buyer3.pk),),)
@@ -132,12 +141,12 @@ class PostgresAdminTestCase(AdminSeleniumTestCase):
         obj = Product.objects.get()
         self.assertEqual(obj.name, 'Pro Trainers')
         self.assertDictEqual(obj.shipping, {'City': 'Dublin', 'Region': 'Co.Dublin', 'Country': 'Ireland',
-                                           'Address': 'Pearse Street'})
+                                            'Address': 'Pearse Street'})
         self.assertListEqual(obj.sports, ['tennis', 'basketball'])
         self.assertListEqual(obj.details['Colours'], ['Black', 'White', 'Blue', '', '', '', '', '', '', ''])
         self.assertDictEqual(obj.details['Brand'], {'Country': 'Germany', 'Name': 'Adidas'})
         self.assertEqual(obj.details['Type'], 'Runners')
-        self.assertListEqual(obj.keywords,['fun', 'popular'])
+        self.assertListEqual(obj.keywords, ['fun', 'popular'])
         buyers = obj.buyers.all().order_by('id')
         self.assertQuerysetEqual(buyers, ['<Buyer: Muhammed Ali>', '<Buyer: Floyd Mayweather>'])
 
@@ -171,22 +180,24 @@ class PostgresAdminTestCase(AdminSeleniumTestCase):
         self.selenium.get('%s/%s/%s' % (self.url, prod.pk, 'change'))
         self.wait_page_loaded()
         ids_values = (("id_keywords_1", "not popular"),
-                      ("id_shipping_address", "Nassau Street"), ("id_details_brand_name", "Nike"), ("id_details_brand_country", "USA"),
+                      ("id_shipping_address", "Nassau Street"), ("id_details_brand_name", "Nike"),
+                      ("id_details_brand_country", "USA"),
                       ("id_details_colours_3", "Red"))
         select_values = (("sports", ("football",),),)
-        many_to_many_select = (("buyers", (buyer2.pk, ),),)
+        many_to_many_select = (("buyers", (buyer2.pk,),),)
         self.fill_form(ids_values, select_values, many_to_many_select, replace=True)
         obj = Product.objects.get()
         buyers = obj.buyers.all().order_by('id')
-        self.assertQuerysetEqual(buyers, ['<Buyer: Muhammed Ali>', '<Buyer: Conor McGregor>', '<Buyer: Floyd Mayweather>'])
+        self.assertQuerysetEqual(buyers,
+                                 ['<Buyer: Muhammed Ali>', '<Buyer: Conor McGregor>', '<Buyer: Floyd Mayweather>'])
         self.assertEqual(obj.name, 'Pro Trainers')
         self.assertDictEqual(obj.shipping, {'City': 'Dublin', 'Region': 'Co. Dublin', 'Country': 'Ireland',
-                                           'Address': 'Nassau Street'})
+                                            'Address': 'Nassau Street'})
         self.assertListEqual(obj.sports, ['football', 'tennis', 'basketball'])
         self.assertListEqual(obj.details['Colours'], ['black', 'white', 'blue', 'Red', '', '', '', '', '', ''])
         self.assertDictEqual(obj.details['Brand'], {'Country': 'USA', 'Name': 'Nike'})
         self.assertEqual(obj.details['Type'], 'runners')
-        self.assertListEqual(obj.keywords,['fun', 'not popular'])
+        self.assertListEqual(obj.keywords, ['fun', 'not popular'])
 
     def test_delete(self):
         buyer1 = Buyer(name='Muhammed Ali')

@@ -1,8 +1,9 @@
-from django.db.models.fields.related_lookups import RelatedLookupMixin, MultiColSource, get_normalized_value
 from django.contrib.postgres.fields.array import ArrayContains, ArrayContainedBy, ArrayExact, ArrayOverlap
+from django.db.models.fields.related_lookups import RelatedLookupMixin, MultiColSource, get_normalized_value
 
 from django_postgres_extensions.models.lookups import (
     AnyExact, AnyGreaterThan, AnyLessThan, AnyGreaterThanOrEqual, AnyLessThanOrEqual, ContainsItem)
+
 
 class RelatedArrayMixin(RelatedLookupMixin):
     def get_prep_lookup(self):
@@ -15,20 +16,26 @@ class RelatedArrayMixin(RelatedLookupMixin):
         self.lookup_name = 'exact'
         return super(RelatedLookupMixin, self).get_prep_lookup()
 
+
 class RelatedAnyExact(RelatedLookupMixin, AnyExact):
     pass
+
 
 class RelatedAnyGreaterThan(RelatedLookupMixin, AnyGreaterThan):
     pass
 
+
 class RelatedAnyLessThan(RelatedLookupMixin, AnyLessThan):
     pass
+
 
 class RelatedAnyGreaterThanOrEqual(RelatedLookupMixin, AnyGreaterThanOrEqual):
     pass
 
+
 class RelatedAnyLessThanOrEqual(RelatedLookupMixin, AnyLessThanOrEqual):
     pass
+
 
 class RelatedArrayExact(RelatedArrayMixin, ArrayExact):
     """
@@ -36,14 +43,18 @@ class RelatedArrayExact(RelatedArrayMixin, ArrayExact):
     """
     pass
 
+
 class RelatedArrayContains(RelatedArrayMixin, ArrayContains):
     pass
+
 
 class RelatedContainsItem(RelatedArrayMixin, ContainsItem):
     pass
 
+
 class RelatedArrayContainedBy(RelatedArrayMixin, ArrayContainedBy):
     pass
+
 
 class RelatedArrayOverlap(RelatedArrayMixin, ArrayOverlap):
     pass

@@ -40,7 +40,6 @@ tempfile.tempdir = os.environ['TMPDIR'] = TMPDIR
 # Removing the temporary TMPDIR.
 atexit.register(shutil.rmtree, TMPDIR)
 
-
 SUBDIRS_TO_SKIP = [
     'data',
     'import_error_package',
@@ -116,6 +115,7 @@ def setup(verbosity, test_labels, parallel):
     def no_available_apps(self):
         raise Exception("Please define available_apps in TransactionTestCase "
                         "and its subclasses.")
+
     TransactionTestCase.available_apps = property(no_available_apps)
     TestCase.available_apps = None
 
@@ -243,6 +243,7 @@ class ActionSelenium(argparse.Action):
     """
     Validate the comma-separated list of requested browsers.
     """
+
     def __call__(self, parser, namespace, values, option_string=None):
         browsers = values.split(',')
         for browser in browsers:
@@ -369,7 +370,7 @@ def paired_tests(paired_test, options, test_labels, parallel):
 
     for i, label in enumerate(test_labels):
         print('***** %d of %d: Check test pairing with %s' % (
-              i + 1, len(test_labels), label))
+            i + 1, len(test_labels), label))
         failures = subprocess.call(subprocess_args + [label, paired_test])
         if failures:
             print('***** Found problem pair with %s' % label)

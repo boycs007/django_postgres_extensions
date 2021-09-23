@@ -1,8 +1,11 @@
-from django.contrib.admin.options import ModelAdmin
-from django.utils.translation import string_concat, ugettext as _
-from django.forms.widgets import CheckboxSelectMultiple, SelectMultiple
-from django_postgres_extensions.models import ArrayManyToManyField
 from django.contrib.admin import widgets
+from django.contrib.admin.options import ModelAdmin
+from django.forms.widgets import CheckboxSelectMultiple, SelectMultiple
+from django.utils.text import format_lazy
+from django.utils.translation import ugettext as _
+
+from django_postgres_extensions.models import ArrayManyToManyField
+
 
 class PostgresAdmin(ModelAdmin):
 
@@ -18,7 +21,7 @@ class PostgresAdmin(ModelAdmin):
 
         if db_field.name in self.raw_id_fields:
             kwargs['widget'] = widgets.ManyToManyRawIdWidget(db_field.remote_field,
-                                    self.admin_site, using=db)
+                                                             self.admin_site, using=db)
             kwargs['help_text'] = ''
         elif db_field.name in (list(self.filter_vertical) + list(self.filter_horizontal)):
             kwargs['widget'] = widgets.FilteredSelectMultiple(
@@ -35,7 +38,7 @@ class PostgresAdmin(ModelAdmin):
         if isinstance(form_field.widget, SelectMultiple) and not isinstance(form_field.widget, CheckboxSelectMultiple):
             msg = _('Hold down "Control", or "Command" on a Mac, to select more than one.')
             help_text = form_field.help_text
-            form_field.help_text = string_concat(help_text, ' ', msg) if help_text else msg
+            form_field.help_text = format_lazy('{} {}', (help_text, msg)) if help_text else msg
         return form_field
 
     def formfield_for_dbfield(self, db_field, request, **kwargs):

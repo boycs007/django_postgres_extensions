@@ -1,6 +1,4 @@
-from django.db.models.sql.datastructures import Join as BaseJoin
-
-#class Join(BaseJoin):
+# class Join(BaseJoin):
 
 def as_sql(self, compiler, connection):
     """

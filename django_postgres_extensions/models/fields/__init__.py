@@ -1,12 +1,13 @@
 from django.contrib.postgres import fields
 from django.contrib.postgres.forms import SplitArrayField as SplitArrayFormField
+from django.core import exceptions
 from django.forms.fields import TypedMultipleChoiceField
 from psycopg2.extras import Json
+
 from django_postgres_extensions.forms.fields import NestedFormField
 from django_postgres_extensions.models.expressions import F, Value as V
 from django_postgres_extensions.models.functions import HStore, Delete, ArrayRemove
 from django_postgres_extensions.models.sql.updates import UpdateArrayByIndex
-from django.core import exceptions
 
 
 class ArrayField(fields.ArrayField):
@@ -84,6 +85,7 @@ class ArrayField(fields.ArrayField):
         })
         return name, path, args, kwargs
 
+
 class HStoreField(fields.HStoreField):
 
     def __init__(self, fields=(), keys=(), max_value_length=25, require_all_fields=False, **kwargs):
@@ -118,6 +120,7 @@ class HStoreField(fields.HStoreField):
         else:
             defaults = kwargs
         return super(HStoreField, self).formfield(**defaults)
+
 
 class JSONField(fields.JSONField):
 

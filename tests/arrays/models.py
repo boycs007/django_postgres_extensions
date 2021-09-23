@@ -1,8 +1,10 @@
 from __future__ import unicode_literals
 
-from django.db import models
 from django.contrib.postgres.fields import HStoreField
+from django.db import models
+
 from django_postgres_extensions.models.fields.related import ArrayField
+
 
 class Product(models.Model):
     name = models.CharField(max_length=3)

@@ -1,5 +1,6 @@
 from django.db.backends.postgresql import schema
 
+
 class DatabaseSchemaEditor(schema.DatabaseSchemaEditor):
     sql_create_array_index = "CREATE INDEX %(name)s ON %(table)s USING GIN (%(columns)s)%(extra)s"
 

@@ -1,8 +1,11 @@
 import copy
-from django.test import TestCase
+
 from django.forms import CharField, Form, TextInput, FileInput
+from django.test import TestCase
+
 from django_postgres_extensions import forms
 from django_postgres_extensions.models.fields import HStoreField
+
 
 class NestedFormWidgetTest(TestCase):
 
@@ -40,7 +43,7 @@ class NestedFormWidgetTest(TestCase):
             <li><label for="bar_c">C:</label><input id="bar_c" name="name_c" type="text" value="lennon" /></li>
             </ul>
         """
-        )
+                        )
 
     def test_needs_multipart_true(self):
         """
@@ -71,7 +74,7 @@ class NestedFormWidgetTest(TestCase):
             (TextInput(), forms.NestedFormWidget(
                 ('C', 'D'),
                 (TextInput(), TextInput())
-                )
+            )
              )
         )
         self.check_html(widget, 'name', ['Singer', ['John', 'Lennon']], html=(
@@ -119,17 +122,18 @@ class TestNestedFormField(TestCase):
 
     def test_model_field_formfield_fields(self):
         model_field = HStoreField(fields=(
-                                         ('a', CharField(max_length=10)),
-                                         ('b', CharField(max_length=10)),
-                                         ('c', CharField(max_length=10))
-                                                )
-                                        )
+            ('a', CharField(max_length=10)),
+            ('b', CharField(max_length=10)),
+            ('c', CharField(max_length=10))
+        )
+        )
         form_field = model_field.formfield()
         self.assertIsInstance(form_field, forms.NestedFormField)
 
     def test_field_has_changed(self):
         class NestedFormTest(Form):
             f1 = forms.NestedFormField(keys=('a', 'b', 'c'))
+
         form_w_hstore = NestedFormTest()
         self.assertFalse(form_w_hstore.has_changed())
 

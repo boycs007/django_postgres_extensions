@@ -1,6 +1,7 @@
-from .widgets import NestedFormWidget
-from django.forms.fields import MultiValueField, CharField
 from django.core.exceptions import ValidationError
+from django.forms.fields import MultiValueField, CharField
+
+from .widgets import NestedFormWidget
 
 
 class NestedFormField(MultiValueField):
@@ -25,6 +26,7 @@ class NestedFormField(MultiValueField):
 
     Uses the NestedFormWidget.
     """
+
     def __init__(self, fields=(), keys=(), require_all_fields=False, max_value_length=25, *args, **kwargs):
         if (fields and keys) or (not fields and not keys):
             raise ValueError("NestedFormField requires either a tuple of fields or keys but not both")
